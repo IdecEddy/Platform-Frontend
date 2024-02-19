@@ -17,6 +17,7 @@ const LoginPage: React.FC = () => {
         value: data,
         httpOnly: true,
         secure: false,
+        sameSite: "lax",
       });
     }
   }
