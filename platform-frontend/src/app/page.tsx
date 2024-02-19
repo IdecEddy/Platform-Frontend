@@ -1,66 +1,114 @@
-import { unstable_noStore as noStore } from "next/cache";
-import Link from "next/link";
-
-import { CreatePost } from "~/app/_components/create-post";
+import React from "react";
 import { api } from "~/trpc/server";
+import { cookies } from "next/headers";
 
-export default async function Home() {
-  noStore();
-  const hello = await api.post.hello.query({ text: "from tRPC" });
-
+const LoginPage: React.FC = () => {
+  async function setCookie(formData: FormData) {
+    "use server";
+    const email = formData.get("email")?.toString();
+    const password = formData.get("password")?.toString();
+    if (email != undefined && password != undefined) {
+      const data = await api.auth.login.mutate({
+        email: email,
+        password: password,
+      });
+      cookies().set({
+        name: "auth-token",
+        value: data,
+        httpOnly: true,
+        secure: false,
+      });
+    }
+  }
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your database and
-              authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to deploy it.
-            </div>
-          </Link>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-2xl text-white">
-            {hello ? hello.greeting : "Loading tRPC query..."}
-          </p>
-        </div>
-
-        <CrudShowcase />
+    <div className="flex h-screen w-full flex-col items-center justify-center bg-blue-200">
+      <h2 className="mb-10 mb-4 text-5xl font-medium leading-6 text-gray-900">
+        Login To Platform
+      </h2>
+      <div className="rounded-lg bg-white p-8 shadow-md">
+        <form action={setCookie}>
+          <div className="mt-1">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              defaultValue={""}
+              className={`
+                mt-1
+                block
+                w-full
+                rounded-md
+                border
+                border-gray-300
+                px-3
+                py-2
+                shadow-sm
+                focus:border-indigo-500
+                focus:outline-none
+                focus:ring-indigo-500
+                sm:text-sm`}
+              required
+            />
+          </div>
+          <div className="mt-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              defaultValue={""}
+              className={`
+                mt-1
+                block
+                w-full
+                rounded-md
+                border
+                border-gray-300
+                px-3
+                py-2
+                shadow-sm
+                focus:border-indigo-500
+                focus:outline-none
+                focus:ring-indigo-500
+                sm:text-sm`}
+              required
+            />
+          </div>
+          <div className="mt-2">
+            <button
+              type="submit"
+              className={`
+                flex
+                w-full
+                justify-center
+                rounded-md
+                border
+                border-transparent
+                bg-indigo-600
+                px-4
+                py-2
+                text-sm
+                font-medium
+                text-white
+                shadow-sm
+                hover:bg-indigo-700
+                focus:outline-none
+                focus:ring-2
+                focus:ring-indigo-500
+                focus:ring-offset-2`}
+            >
+              Submit
+            </button>
+          </div>
+        </form>
       </div>
-    </main>
-  );
-}
-
-async function CrudShowcase() {
-  const latestPost = await api.post.getLatest.query();
-
-  return (
-    <div className="w-full max-w-xs">
-      {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
-      ) : (
-        <p>You have no posts yet.</p>
-      )}
-
-      <CreatePost />
     </div>
   );
-}
+};
+
+export default LoginPage;
