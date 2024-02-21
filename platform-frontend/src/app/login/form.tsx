@@ -1,19 +1,19 @@
-'use client';
+"use client";
 import { setCookie } from "~/actions/set-cookies";
 import { useState } from "react";
 import Error from "./error";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 export default function Form() {
-  const [ error, setError ] = useState("")
-  const router = useRouter(); 
+  const [error, setError] = useState("");
+  const router = useRouter();
   async function submitData(formData: FormData) {
     const result = await setCookie(formData);
     if (result?.error) {
-      setError(result.error)
+      setError(result.error);
     }
     if (result?.auth) {
-      router.push("/panel"); 
+      router.push("/panel");
     }
   }
   return (
@@ -98,7 +98,7 @@ export default function Form() {
           </button>
         </div>
       </form>
-      { error ? <Error>{error}</Error> : "" }
-      </div>
+      {error ? <Error>{error}</Error> : ""}
+    </div>
   );
-};
+}
