@@ -1,6 +1,5 @@
 import { z } from "zod";
 import axios, { AxiosError } from "axios";
-import { AxiosError } from 'axios';
 import https from "https";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { cookies } from "next/headers";
@@ -41,7 +40,7 @@ export const authRouter = createTRPCRouter({
       }
     }),
   validateToken: publicProcedure.query(async () => {
-    const authToken = cookies().get("auth-token")?.value;
+    const authToken = cookies().get("refresh-token")?.value;
     if (authToken) {
       const body = {
         token: authToken,
