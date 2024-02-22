@@ -1,5 +1,6 @@
 import { z } from "zod";
 import axios, { AxiosError } from "axios";
+import { AxiosError } from 'axios';
 import https from "https";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { cookies } from "next/headers";
@@ -32,8 +33,10 @@ export const authRouter = createTRPCRouter({
           return { auth: true, data: authToken, error: undefined };
         }
       } catch (error) {
-        if (error.response) {
-          return { auth: false, data: undefined, error: error };
+        if ( error instanceof AxiosError ) {
+          if (error.response) {
+            return { auth: false, data: undefined, error: error };
+          }
         }
       }
     }),

@@ -22,7 +22,7 @@ export async function setCookie(formData: FormData) {
     }
     if (data && data.auth == true) {
       cookies().set({
-        name: "auth-token",
+        name: "refresh-token",
         value: data.data,
         httpOnly: true,
         secure: false,
