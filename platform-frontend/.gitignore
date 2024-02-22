@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 
+sandbox
 # testing
 /coverage
 
