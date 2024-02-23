@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   // Assuming this is within an async function context
 
-  const token = request.cookies.get("auth-token")?.value;
+  const token = request.cookies.get("refresh-token")?.value;
   // Redirect immediately if the token doesn't exist
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));

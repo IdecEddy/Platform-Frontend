@@ -4,6 +4,13 @@ import https from "https";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { cookies } from "next/headers";
 
+const API_URL = process.env.AUTH_API_URL;
+if (!API_URL) {
+  throw new Error(
+    "AUTH_API_URL environment variable is not set. Application will not start.",
+  );
+}
+
 export const authRouter = createTRPCRouter({
   login: publicProcedure
     .input(
@@ -13,30 +20,34 @@ export const authRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
+      const isProduction = process.env.NODE_ENV === "production";
       const body = {
         email: input.email,
         password: input.password,
         audience: "platform-frontend",
       };
       const httpsAgent = new https.Agent({
-        rejectUnauthorized: false, // WARNING: This disables SSL certificate validation.
+        rejectUnauthorized: isProduction,
       });
       try {
-        const response = await axios.post(
-          "https://127.0.0.1:8000/api/v1/auth/login",
-          body,
-          { httpsAgent },
-        );
+        const response = await axios.post(API_URL, body, { httpsAgent });
         if (response.data.authToken) {
           const authToken = response.data.authToken;
-          return { auth: true, data: authToken, error: undefined };
+          return { auth: true, data: authToken, error: null };
+        } else {
+          return {
+            auth: false,
+            data: null,
+            error: "Authentication token was not provided.",
+          };
         }
       } catch (error) {
-        if ( error instanceof AxiosError ) {
-          if (error.response) {
-            return { auth: false, data: undefined, error: error };
-          }
-        }
+        console.error("Login error:", error);
+        const errorMessage =
+          error instanceof AxiosError
+            ? "Failed to authenticate. Please check your credentials and try again."
+            : "An unknown error occurred.";
+        return { auth: false, data: null, error: errorMessage };
       }
     }),
   validateToken: publicProcedure.query(async () => {

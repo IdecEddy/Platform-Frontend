@@ -21,6 +21,7 @@ export async function setCookie(formData: FormData) {
       }
     }
     if (data && data.auth == true) {
+      console.log("we are in");
       cookies().set({
         name: "refresh-token",
         value: data.data,
