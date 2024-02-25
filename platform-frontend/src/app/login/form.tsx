@@ -1,21 +1,28 @@
 "use client";
 import { setCookie } from "~/actions/set-cookies";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Error from "./error";
 import { useRouter } from "next/navigation";
 
 export default function Form() {
   const [error, setError] = useState("");
+  const [login, setLogin] = useState(false);
   const router = useRouter();
   async function submitData(formData: FormData) {
-    const result = await setCookie(formData);
-    if (result?.error) {
+    const result = await setCookie(formData)
+    if ( result && result.error ) {
       setError(result.error);
     }
-    if (result?.auth) {
-      router.push("/panel");
+    if ( result && result.auth ) {
+      setLogin(true)
     }
   }
+  useEffect(() => {
+    if(login) {
+      setLogin(false);
+      router.push("/panel");
+    }
+  }, [login]);
   return (
     <div>
       <form action={submitData}>

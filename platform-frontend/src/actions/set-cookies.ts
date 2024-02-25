@@ -1,11 +1,12 @@
 "use server";
-import { cookies } from "next/headers";
 import { api } from "~/trpc/server";
 import { TRPCClientError } from "@trpc/client";
+import { NextResponse, NextRequest } from "next/server";
 
-export async function setCookie(formData: FormData) {
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
+export async function setCookie(request: NextRequest) {
+  const data = await request.formData()
+  const email = data.get("email") as string;
+  const password = data.get("password") as string;
   if (email != undefined && password != undefined) {
     let data;
     try {
@@ -21,16 +22,13 @@ export async function setCookie(formData: FormData) {
       }
     }
     if (data && data.auth == true) {
-      console.log("we are in");
-      cookies().set({
-        name: "refresh-token",
-        value: data.data,
+      const destinationUrl = new URL("http://localhost:3000/panel");
+      const response = NextResponse.redirect(destinationUrl, { status: 302 });
+      response.cookies.set("refresh-token", data.data.refresh_token, { 
         httpOnly: true,
         secure: false,
-      });
-      return {
-        auth: "true",
-      };
+      })
+      return response;
     }
     if (data && data.error && data.auth == false) {
       return {

@@ -5,11 +5,16 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { cookies } from "next/headers";
 
 const API_URL = process.env.AUTH_API_URL;
+const isProduction = process.env.NODE_ENV === "production";
+
 if (!API_URL) {
   throw new Error(
     "AUTH_API_URL environment variable is not set. Application will not start.",
   );
 }
+
+const LOGIN_ENDPOINT = API_URL + "login";
+const VALIDATE_ENDPOINT = API_URL + "verify_token";
 
 export const authRouter = createTRPCRouter({
   login: publicProcedure
@@ -20,7 +25,6 @@ export const authRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const isProduction = process.env.NODE_ENV === "production";
       const body = {
         email: input.email,
         password: input.password,
@@ -30,10 +34,9 @@ export const authRouter = createTRPCRouter({
         rejectUnauthorized: isProduction,
       });
       try {
-        const response = await axios.post(API_URL, body, { httpsAgent });
+        const response = await axios.post(LOGIN_ENDPOINT, body, { httpsAgent });
         if (response.data.authToken) {
-          const authToken = response.data.authToken;
-          return { auth: true, data: authToken, error: null };
+          return { auth: true, data: response.data, error: null };
         } else {
           return {
             auth: false,
@@ -52,21 +55,18 @@ export const authRouter = createTRPCRouter({
     }),
   validateToken: publicProcedure.query(async () => {
     const authToken = cookies().get("refresh-token")?.value;
-    if (authToken) {
-      const body = {
-        token: authToken,
-        audience: "platform-frontend",
-      };
-      const httpsAgent = new https.Agent({
-        rejectUnauthorized: false, // WARNING: This disables SSL certificate validation.
-      });
-      const { data } = await axios.post(
-        "https://127.0.0.1:8000/api/v1/auth/verify_token",
-        body,
-        { httpsAgent },
-      );
-      return { auth: true, data: data };
+    if (!authToken) {
+      return { auth: false, data: null, error: "No refresh token provided." };
     }
-    return { auth: false, data: {} };
+    const body = {
+      refreshToken: authToken,
+      authToken: authToken,
+      audience: "platform-frontend",
+    };
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: isProduction,
+    });
+    const { data } = await axios.post(VALIDATE_ENDPOINT, body, { httpsAgent });
+    return { auth: true, data: data };
   }),
 });
