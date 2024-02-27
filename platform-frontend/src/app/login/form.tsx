@@ -1,28 +1,20 @@
 "use client";
-import { setCookie } from "~/actions/set-cookies";
 import { useState, useEffect } from "react";
 import Error from "./error";
-import { useRouter } from "next/navigation";
-
+import { login } from "~/actions/auth";
+import { redirect } from "next/navigation";
 export default function Form() {
-  const [error, setError] = useState("");
-  const [login, setLogin] = useState(false);
-  const router = useRouter();
+  const [errors, setErrors] = useState({});
   async function submitData(formData: FormData) {
-    const result = await setCookie(formData)
-    if ( result && result.error ) {
-      setError(result.error);
+    setErrors({});
+    const ret = await login(formData);
+    if (ret && ret.errors) {
+      setErrors(ret.errors);
     }
-    if ( result && result.auth ) {
-      setLogin(true)
-    }
+    if (ret && ret.status == 200 ) {
+      redirect("/panel");
+    } 
   }
-  useEffect(() => {
-    if(login) {
-      setLogin(false);
-      router.push("/panel");
-    }
-  }, [login]);
   return (
     <div>
       <form action={submitData}>
@@ -105,7 +97,15 @@ export default function Form() {
           </button>
         </div>
       </form>
-      {error ? <Error>{error}</Error> : ""}
+      {Object.keys(errors).length > 0 && 
+        Object.entries(errors).map(([field, errorMessages], index) => (
+          <div key={index}>
+            {errorMessages.map((message, messageIndex) => (
+              <Error key={messageIndex}>{field}: {message}</Error>
+            ))}
+          </div>
+        ))
+      }
     </div>
   );
 }
