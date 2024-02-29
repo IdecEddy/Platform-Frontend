@@ -1,12 +1,14 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { validateToken } from '~/actions/auth'; 
+import { validateToken } from '~/actions/auth';
+import { DesktopNav } from '~/components/navbar';
+
 const Panel: React.FC = () => {
   const [loggedIn, setLogin] = useState(false);
   const [authToken, setAuthToken] = useState(null);
-    useEffect(() => {
+  useEffect(() => {
     async function checkToken() {
-      const ret = await validateToken(authToken);
+    const ret = await validateToken(authToken);
       if (ret && ret.status == 200) {
         setLogin(true);
         setAuthToken(ret.authToken);
@@ -21,8 +23,11 @@ const Panel: React.FC = () => {
     
     return () =>  clearInterval(interval);
   }, [authToken]);
+  
   if (loggedIn == true) {
-    return ( <p>{authToken}</p> );
+    return (
+      <DesktopNav />
+    )
   }
 };
 export default Panel;
