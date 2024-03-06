@@ -1,8 +1,9 @@
+'use server'
 import yaml from 'js-yaml';
 import axios, { AxiosError } from "axios";
 import https from "https";
 import { z } from 'zod';
-
+import { cookies } from 'next/headers';
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 
@@ -18,9 +19,10 @@ const yamlSchema = z.string().refine((data) => {
 });
 
 const KubeConfigRequestSchema = z.object({
-  user_id: z.number().int(),  // Ensure it's an integer
-  auth_token: z.string(),
-  kube_conf_file: yamlSchema,  // Use the custom YAML validation schema
+  userId: z.number().int(),  // Ensure it's an integer
+  authToken: z.string(),
+  refreshToken: z.string(),
+  kubeConfFile: yamlSchema,  // Use the custom YAML validation schema
 });
 
 async function readFileContent(file: any) {
@@ -32,6 +34,7 @@ async function readFileContent(file: any) {
 
 export async function postKubeConf(formData: FormData) {
   try {
+    const refreshToken = cookies().get("refresh-token")?.value
     const userIdValue = formData.get("userId");
     if (typeof userIdValue !== "string" || !userIdValue.trim()) throw new Error("User ID is missing or not a string");
     const userId = parseInt(userIdValue, 10);
@@ -39,15 +42,16 @@ export async function postKubeConf(formData: FormData) {
     const authToken = formData.get("authToken");
     if (typeof authToken !== "string" || !authToken.trim()) throw new Error("Auth token is missing or not a string");
 
-    const configFileText = await readFileContent(formData.get("configFile"));
-
+    const configFileText = await readFileContent(formData.get("kubeConfFile"));
     const validatedFields = KubeConfigRequestSchema.safeParse({
-      user_id: userId,
-      auth_token: authToken,
-      kube_conf_file: configFileText,
+      userId: userId,
+      authToken: authToken,
+      refreshToken: refreshToken,
+      kubeConfFile: configFileText,
     });
 
     if (!validatedFields.success) {
+      console.log( validatedFields.error )
       return { errors: validatedFields.error } 
     }
 
