@@ -17,8 +17,8 @@ if (!API_URL) {
 
 const LOGIN_ENDPOINT = API_URL + "login";
 const VALIDATE_ENDPOINT = API_URL + "verify_token";
-
-
+const AUTHTOKEN_ENDPOINT = API_URL + "verify_auth_token";
+const REFRESHTOKEN_ENDPOINT = API_URL + "verify_refresh_token";
 const userLogin = z.object({
   email: z.string().email(),
   password: z.string().min(2, "String must be longer then 1 character.")
@@ -83,4 +83,38 @@ export async function validateToken(authToken: string | null) {
   }
 
   return { status: 200 }
+}
+
+export async function validateAuthToken(authToken: string) {
+  let body = {
+    authToken: authToken,
+    audience: "platform-frontend"
+  }
+  const httpsAgent = new https.Agent({
+    rejectUnauthorized: IS_PRODUCTION,
+  });
+  try {
+    let response = await axios.post(AUTHTOKEN_ENDPOINT, body, { httpsAgent });
+    return { status: 200 }
+  } catch (error) {
+    return { status: 401 }
+  }
+}
+
+export async function validateRefreshToken() {
+  const refreshToken = cookies().get("refresh-token")?.value
+  let body = {
+    refreshToken: refreshToken,
+    audience: "platform-frontend"
+  }
+  const httpsAgent= new https.Agent({
+    rejectUnauthorized: IS_PRODUCTION,
+  });
+  try {
+    let response = await axios.post(REFRESHTOKEN_ENDPOINT, body, { httpsAgent });
+    console.log(response);
+    return { authToken: response.data.authToken }
+  } catch (error) {
+    redirect("/login");
+  }
 }

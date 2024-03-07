@@ -1,6 +1,6 @@
 'use server'
 import yaml from 'js-yaml';
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import https from "https";
 import { z } from 'zod';
 import { cookies } from 'next/headers';
