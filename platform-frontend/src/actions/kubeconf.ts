@@ -72,4 +72,6 @@ export async function postKubeConf(formData: FormData) {
   }
 };
 
+export async function getUsersKubeConf(authToken: String) {
 
+}
