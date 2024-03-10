@@ -1,12 +1,14 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { validateRefreshToken, validateAuthToken } from '~/actions/auth';
+import { getUsersKubeConf } from '~/actions/kubeconf'; 
 import { DesktopNav } from '~/components/navbar';
 
 const Panel: React.FC = () => {
   const activeNavItem = "Configs";
   const [loggedIn, setLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
+  const [data, setData] = useState(null);
   useEffect(() => {
     async function authenticate() {
       let token = authToken;
@@ -38,11 +40,29 @@ const Panel: React.FC = () => {
     
     return () =>  clearInterval(interval);
   }, [authToken]);
-
-  
+  useEffect(() => {
+    async function getUsersConfs(){
+      if (authToken && authToken != null) {
+        const confsReturn = await getUsersKubeConf(authToken);
+        setData(confsReturn);
+      }
+    }
+    getUsersConfs();
+  }, [authToken]);
+  if (!data) {
+    return <p>No configuration data available.</p>;
+  } 
   if (loggedIn == true) {
     return (
-      <DesktopNav activeItem={activeNavItem} />
+      <div>
+        <DesktopNav activeItem={activeNavItem} />
+        {data.map((item, index) => (
+          <div key={index}>
+            <pre>{item.config_data}</pre>
+          </div>
+        ))}
+      </div>
+
     )
   }
 };
