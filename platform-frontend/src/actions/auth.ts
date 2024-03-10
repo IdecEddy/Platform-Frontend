@@ -75,7 +75,6 @@ export async function validateToken(authToken: string | null) {
       body.authToken = response.data.authToken
       response = await axios.post(VALIDATE_ENDPOINT, body, { httpsAgent })
     }
-    console.log(response.data.message)
     return { status: 200, authToken: response.data.authToken }
   } catch (error) {
     console.log(error)
@@ -112,7 +111,6 @@ export async function validateRefreshToken() {
   });
   try {
     let response = await axios.post(REFRESHTOKEN_ENDPOINT, body, { httpsAgent });
-    console.log(response);
     return { authToken: response.data.authToken }
   } catch (error) {
     redirect("/login");
