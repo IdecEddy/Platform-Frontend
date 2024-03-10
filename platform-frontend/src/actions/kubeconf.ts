@@ -21,7 +21,6 @@ const yamlSchema = z.string().refine((data) => {
 const KubeConfigRequestSchema = z.object({
   userId: z.number().int(),  // Ensure it's an integer
   authToken: z.string(),
-  refreshToken: z.string(),
   kubeConfFile: yamlSchema,  // Use the custom YAML validation schema
 });
 
@@ -34,7 +33,6 @@ async function readFileContent(file: any) {
 
 export async function postKubeConf(formData: FormData) {
   try {
-    const refreshToken = cookies().get("refresh-token")?.value
     const userIdValue = formData.get("userId");
     if (typeof userIdValue !== "string" || !userIdValue.trim()) throw new Error("User ID is missing or not a string");
     const userId = parseInt(userIdValue, 10);
@@ -46,7 +44,6 @@ export async function postKubeConf(formData: FormData) {
     const validatedFields = KubeConfigRequestSchema.safeParse({
       userId: userId,
       authToken: authToken,
-      refreshToken: refreshToken,
       kubeConfFile: configFileText,
     });
 
@@ -73,5 +70,17 @@ export async function postKubeConf(formData: FormData) {
 };
 
 export async function getUsersKubeConf(authToken: String) {
+  const body = {
+    userId: 1,
+    authToken: authToken
+  }
 
+  const httpsAgent = new https.Agent({ rejectUnauthorized: IS_PRODUCTION });
+  try {
+    const confResponse = await axios.post('https://127.0.0.1:8001/api/v1/k8/conf/users_confs', body, { httpsAgent });
+    console.log(confResponse.status);
+    return confResponse.data;
+  } catch (error) {
+    console.log(error);
+  }
 }
