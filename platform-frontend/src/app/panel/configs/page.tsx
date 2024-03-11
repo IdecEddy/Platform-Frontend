@@ -2,7 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { validateRefreshToken, validateAuthToken } from '~/actions/auth';
 import { getUsersKubeConf } from '~/actions/kubeconf'; 
+import Card from '~/components/card/card';
+import CardContnet from '~/components/card/cardContent';
+import CardDescription from '~/components/card/cardDescription';
+import CardInfo from '~/components/card/cardInfo';
+import CardTitle from '~/components/card/cardTitle';
 import { DesktopNav } from '~/components/navbar';
+import PanelUi from '~/components/panelUi/page';
 
 const Panel: React.FC = () => {
   const activeNavItem = "Configs";
@@ -54,15 +60,35 @@ const Panel: React.FC = () => {
   } 
   if (loggedIn == true) {
     return (
-      <div>
+      <div className="flex flex-row">
         <DesktopNav activeItem={activeNavItem} />
-        {data.map((item, index) => (
-          <div key={index}>
-            <pre>{item.config_data}</pre>
-          </div>
-        ))}
+        <PanelUi>
+          <Card>
+            <CardTitle>
+              Minkube Home Cluster
+            </CardTitle>
+            <CardDescription>
+              This is a Minkube cluster hosted on my home network.
+            </CardDescription>
+            <CardContnet>
+              <CardInfo label="Cluster Name:" info="minikube" />
+              <CardInfo label="User Name:" info="minikube" />
+            </CardContnet>
+          </Card>
+          <Card>
+            <CardTitle>
+              Production Cluster
+            </CardTitle>
+            <CardDescription>
+              This is the production cluster out in the cloud somewhere!
+            </CardDescription>
+            <CardContnet>
+              <CardInfo label="Cluster Name:" info="Prod Cluster" />
+              <CardInfo label="User Name:" info="Admin" />
+            </CardContnet>
+          </Card>
+        </PanelUi>
       </div>
-
     )
   }
 };
