@@ -4,7 +4,7 @@ import { TRPCClientError } from "@trpc/client";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function setCookie(request: NextRequest) {
-  const data = await request.formData()
+  const data = await request.formData();
   const email = data.get("email") as string;
   const password = data.get("password") as string;
   if (email != undefined && password != undefined) {
@@ -24,10 +24,10 @@ export async function setCookie(request: NextRequest) {
     if (data && data.auth == true) {
       const destinationUrl = new URL("http://localhost:3000/panel");
       const response = NextResponse.redirect(destinationUrl, { status: 302 });
-      response.cookies.set("refresh-token", data.data.refresh_token, { 
+      response.cookies.set("refresh-token", data.data.refresh_token, {
         httpOnly: true,
         secure: false,
-      })
+      });
       return response;
     }
     if (data && data.error && data.auth == false) {

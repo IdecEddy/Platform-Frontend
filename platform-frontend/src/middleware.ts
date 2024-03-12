@@ -32,7 +32,6 @@ export async function middleware(request: NextRequest) {
       throw new Error("Authentication failed");
     }
 
-    
     return NextResponse.next();
   } catch (error: any) {
     console.error(`Authentication error: ${error.message}`);

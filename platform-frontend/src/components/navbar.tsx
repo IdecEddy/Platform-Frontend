@@ -1,29 +1,31 @@
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
-
-export function DesktopNav({ activeItem } : { activeItem: String }) {
+export function DesktopNav({ activeItem }: { activeItem: String }) {
   const navbarItems = [
-    { name: 'Home', href: '/panel' }, 
-    { name: 'Clusters', href: '/clusters' },
-    { name: 'Nodes', href: '/nodes' },
-    { name: 'Configs', href: '/panel/configs' },
+    { name: "Home", href: "/panel" },
+    { name: "Clusters", href: "/clusters" },
+    { name: "Nodes", href: "/nodes" },
+    { name: "Configs", href: "/panel/configs" },
   ];
   return (
-    <div className="w-64 h-screen bg-stone-400 flex flex-col">
-      <div className="bg-stone-600 w-full h-16 flex justify-center items-center font-bold text-white">
+    <div className="flex h-screen w-64 flex-col bg-stone-400">
+      <div className="flex h-16 w-full items-center justify-center bg-stone-600 font-bold text-white">
         Platform
       </div>
-      <div className="flex flex-col flex-grow">
+      <div className="flex flex-grow flex-col">
         {navbarItems.map((item) => (
-          <Link key={item.name} href={item.href} passHref className={`block p-3 hover:bg-stone-300 transition-colors duration-200 cursor-pointer ${activeItem === item.name ? 'bg-stone-500 text-white' : ''}`}>
-              {item.name}
+          <Link
+            key={item.name}
+            href={item.href}
+            passHref
+            className={`block cursor-pointer p-3 transition-colors duration-200 hover:bg-stone-300 ${activeItem === item.name ? "bg-stone-500 text-white" : ""}`}
+          >
+            {item.name}
           </Link>
         ))}
       </div>
-      <button
-        className="w-full py-3 bg-stone-600 text-white font-bold hover:bg-stone-700 transition-colors duration-200"
-      >
+      <button className="w-full bg-stone-600 py-3 font-bold text-white transition-colors duration-200 hover:bg-stone-700">
         Logout
       </button>
     </div>

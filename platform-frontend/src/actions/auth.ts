@@ -1,7 +1,7 @@
-'use server';
+"use server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { z } from 'zod'
+import { z } from "zod";
 import axios, { AxiosError } from "axios";
 import https from "https";
 
@@ -21,17 +21,17 @@ const AUTHTOKEN_ENDPOINT = API_URL + "verify_auth_token";
 const REFRESHTOKEN_ENDPOINT = API_URL + "verify_refresh_token";
 const userLogin = z.object({
   email: z.string().email(),
-  password: z.string().min(2, "String must be longer then 1 character.")
-})
+  password: z.string().min(2, "String must be longer then 1 character."),
+});
 
 export async function login(formData: FormData) {
   // Validate the users inputs. Return errors object if any are found.
   const validatedFields = userLogin.safeParse({
     email: formData.get("email"),
-    password: formData.get("password")
+    password: formData.get("password"),
   });
-  if (!validatedFields.success) { 
-    return { errors: validatedFields.error.flatten().fieldErrors }
+  if (!validatedFields.success) {
+    return { errors: validatedFields.error.flatten().fieldErrors };
   }
   // Send login details to auth api
   const body = {
@@ -40,78 +40,82 @@ export async function login(formData: FormData) {
     audience: "platform-frontend",
   };
   const httpsAgent = new https.Agent({
-    rejectUnauthorized: IS_PRODUCTION, 
+    rejectUnauthorized: IS_PRODUCTION,
   });
   try {
     const response = await axios.post(LOGIN_ENDPOINT, body, { httpsAgent });
     const authToken = response.data.authToken;
     const refreshToken = response.data.refreshToken;
-    cookies().set("refresh-token", refreshToken, { httpOnly: true, secure: false, sameSite: "lax" });
-    return { status: 200, authToken: authToken }
+    cookies().set("refresh-token", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+    return { status: 200, authToken: authToken };
   } catch (error) {
-    console.log(error)
-    return { errors: {"request": ["Login failed please try again"] }}
+    console.log(error);
+    return { errors: { request: ["Login failed please try again"] } };
   }
 }
 
 export async function validateToken(authToken: string | null) {
   const refreshToken = cookies().get("refresh-token");
-  if ( !refreshToken && !authToken ) {
+  if (!refreshToken && !authToken) {
     redirect("/login");
   }
 
   let body = {
     authToken: authToken,
     refreshToken: refreshToken?.value,
-    audience: "platform-frontend"
-  }
+    audience: "platform-frontend",
+  };
   const httpsAgent = new https.Agent({
-    rejectUnauthorized: IS_PRODUCTION, 
+    rejectUnauthorized: IS_PRODUCTION,
   });
   try {
-    let response = await axios.post(VALIDATE_ENDPOINT, body, { httpsAgent })
-    if(response.data.status == 301) {
-      console.log("Had to use refreshToken retrying auth")
-      body.authToken = response.data.authToken
-      response = await axios.post(VALIDATE_ENDPOINT, body, { httpsAgent })
+    let response = await axios.post(VALIDATE_ENDPOINT, body, { httpsAgent });
+    if (response.data.status == 301) {
+      console.log("Had to use refreshToken retrying auth");
+      body.authToken = response.data.authToken;
+      response = await axios.post(VALIDATE_ENDPOINT, body, { httpsAgent });
     }
-    return { status: 200, authToken: response.data.authToken }
+    return { status: 200, authToken: response.data.authToken };
   } catch (error) {
-    console.log(error)
+    console.log(error);
     redirect("/login");
   }
 
-  return { status: 200 }
+  return { status: 200 };
 }
 
 export async function validateAuthToken(authToken: string) {
   let body = {
     authToken: authToken,
-    audience: "platform-frontend"
-  }
+    audience: "platform-frontend",
+  };
   const httpsAgent = new https.Agent({
     rejectUnauthorized: IS_PRODUCTION,
   });
   try {
     let response = await axios.post(AUTHTOKEN_ENDPOINT, body, { httpsAgent });
-    return { status: 200 }
+    return { status: 200 };
   } catch (error) {
-    return { status: 401 }
+    return { status: 401 };
   }
 }
 
 export async function validateRefreshToken() {
-  const refreshToken = cookies().get("refresh-token")?.value
+  const refreshToken = cookies().get("refresh-token")?.value;
   let body = {
     refreshToken: refreshToken,
-    audience: "platform-frontend"
-  }
-  const httpsAgent= new https.Agent({
+    audience: "platform-frontend",
+  };
+  const httpsAgent = new https.Agent({
     rejectUnauthorized: IS_PRODUCTION,
   });
   try {
     let response = await axios.post(REFRESHTOKEN_ENDPOINT, body, { httpsAgent });
-    return { authToken: response.data.authToken }
+    return { authToken: response.data.authToken };
   } catch (error) {
     redirect("/login");
   }

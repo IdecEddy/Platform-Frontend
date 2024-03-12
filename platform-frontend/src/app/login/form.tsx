@@ -11,9 +11,9 @@ export default function Form() {
     if (ret && ret.errors) {
       setErrors(ret.errors);
     }
-    if (ret && ret.status == 200 ) {
+    if (ret && ret.status == 200) {
       redirect("/panel");
-    } 
+    }
   }
   return (
     <div>
@@ -97,15 +97,16 @@ export default function Form() {
           </button>
         </div>
       </form>
-      {Object.keys(errors).length > 0 && 
+      {Object.keys(errors).length > 0 &&
         Object.entries(errors).map(([field, errorMessages], index) => (
           <div key={index}>
             {errorMessages.map((message, messageIndex) => (
-              <Error key={messageIndex}>{field}: {message}</Error>
+              <Error key={messageIndex}>
+                {field}: {message}
+              </Error>
             ))}
           </div>
-        ))
-      }
+        ))}
     </div>
   );
 }
