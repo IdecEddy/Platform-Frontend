@@ -9,7 +9,18 @@ import CardInfo from "~/components/card/cardInfo";
 import CardTitle from "~/components/card/cardTitle";
 import { DesktopNav } from "~/components/navbar";
 import PanelUi from "~/components/panelUi/page";
-
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
+import { postKubeConf } from "~/actions/kubeconf";
 const Panel: React.FC = () => {
   type DataItem = {
     config_data: String;
@@ -20,11 +31,33 @@ const Panel: React.FC = () => {
     user_id: Number;
     id: Number;
   };
-
+  const router = useRouter();
   const activeNavItem = "Configs";
   const [loggedIn, setLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
   const [data, setData] = useState<DataItem[]>([]);
+  const [erros, setErrors] = useState({});
+  const [open, setOpen] = useState(false);
+  async function submitData(formData: FormData){
+    setErrors({});
+    let submitable = true
+    for (const item in formData.values) {
+      if (!item.trim()) {
+        submitable = false
+      }
+    }
+    if (submitable) { 
+      setOpen(false)
+    }
+    const ret = await postKubeConf(formData);
+    if ( ret && ret.errors) {
+      setErrors(ret.errors);
+      console.log(ret.errors);
+    }
+    if (ret && ret.status == 200) {
+      console.log("we did it");
+    }
+  }
 
   useEffect(() => {
     async function authenticate() {
@@ -78,13 +111,77 @@ const Panel: React.FC = () => {
       </div>
     );
   }
-
   // if we do have data then we are going to show this ui.
   if (loggedIn == true) {
     return (
       <div className="flex flex-row">
         <DesktopNav activeItem={activeNavItem} />
         <PanelUi>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger>
+              <Card>
+                <div className="flex justify-center items-center">
+                  <Image
+                    src={"/images/add_icon.png"}
+                    width={150}
+                    height={150}
+                    alt="Add a config"/>
+                </div>
+              </Card>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Add a configuration file </SheetTitle>
+                <SheetDescription>
+                  Fill out this form to create a new kubernetes configuration file used to manage new clusters.
+                </SheetDescription>
+              </SheetHeader>                
+                <form action={submitData} className="flex flex-col gap-4">
+                  <label className='font-bold' htmlFor="userId">User ID</label>
+                  <input
+                    type="text"
+                    id="userId"
+                    name="userId"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <label className='font-bold' htmlFor="label">Cluster Label</label>
+                  <input
+                    type="text"
+                    id="label"
+                    name="label"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <label className='font-bold' htmlFor="description">Cluster Description</label>
+                  <input
+                    type="text"
+                    id="description"
+                    name="description"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <label className='font-bold' htmlFor="authToken">Auth Token</label>
+                  <input
+                    type="text"
+                    id="authToken"
+                    name="authToken"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  
+                  <label className='font-bold'htmlFor="configFile">Config File</label>
+                  <input
+                    type="file"
+                    id="kubeConfFile"
+                    name="kubeConfFile"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <button type="submit" className="bg-blue-500 text-white rounded-md p-2 font-bold">Submit</button>
+                </form>
+            </SheetContent>
+          </Sheet>
           {data.map((kubeConf, index) => (
             <Card key={index}>
               <CardTitle>{kubeConf.config_label}</CardTitle>
