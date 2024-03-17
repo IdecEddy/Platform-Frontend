@@ -115,7 +115,7 @@ const Panel: React.FC = () => {
   // if we do have data then we are going to show this ui.
   if (loggedIn == true) {
     return (
-      <div className="flex flex-row">
+      <div className="">
         <DesktopNav activeItem={activeNavItem} />
         <PanelUi>
           <Sheet open={open} onOpenChange={setOpen}>
