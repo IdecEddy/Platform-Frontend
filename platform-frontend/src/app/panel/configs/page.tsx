@@ -10,10 +10,8 @@ import CardTitle from "~/components/card/cardTitle";
 import { DesktopNav } from "~/components/navbar";
 import PanelUi from "~/components/panelUi/page";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -21,6 +19,7 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet";
 import { postKubeConf } from "~/actions/kubeconf";
+import Error from "~/components/errors/errors";
 const Panel: React.FC = () => {
   type DataItem = {
     config_data: String;
@@ -31,12 +30,14 @@ const Panel: React.FC = () => {
     user_id: Number;
     id: Number;
   };
-  const router = useRouter();
+  interface FormErrors {
+    [field: string]: string[];
+  }
   const activeNavItem = "Configs";
   const [loggedIn, setLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
   const [data, setData] = useState<DataItem[]>([]);
-  const [erros, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [open, setOpen] = useState(false);
   async function submitData(formData: FormData){
     setErrors({});
@@ -46,15 +47,15 @@ const Panel: React.FC = () => {
         submitable = false
       }
     }
-    if (submitable) { 
-      setOpen(false)
-    }
-    const ret = await postKubeConf(formData);
+    const ret = await postKubeConf(formData, authToken);
     if ( ret && ret.errors) {
       setErrors(ret.errors);
       console.log(ret.errors);
     }
     if (ret && ret.status == 200) {
+      if(submitable) {
+        setOpen(false)
+      }
       console.log("we did it");
     }
   }
@@ -136,15 +137,7 @@ const Panel: React.FC = () => {
                   Fill out this form to create a new kubernetes configuration file used to manage new clusters.
                 </SheetDescription>
               </SheetHeader>                
-                <form action={submitData} className="flex flex-col gap-4">
-                  <label className='font-bold' htmlFor="userId">User ID</label>
-                  <input
-                    type="text"
-                    id="userId"
-                    name="userId"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
+                <form action={submitData} className="flex flex-col gap-4 mt-4">
                   <label className='font-bold' htmlFor="label">Cluster Label</label>
                   <input
                     type="text"
@@ -161,15 +154,6 @@ const Panel: React.FC = () => {
                     required={true}
                     className="border-2 border-gray-200 rounded-md p-2"
                   />
-                  <label className='font-bold' htmlFor="authToken">Auth Token</label>
-                  <input
-                    type="text"
-                    id="authToken"
-                    name="authToken"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  
                   <label className='font-bold'htmlFor="configFile">Config File</label>
                   <input
                     type="file"
@@ -180,6 +164,16 @@ const Panel: React.FC = () => {
                   />
                   <button type="submit" className="bg-blue-500 text-white rounded-md p-2 font-bold">Submit</button>
                 </form>
+                {Object.keys(errors).length > 0 &&
+                  Object.entries(errors).map(([field, errorMessages], index) => (
+                    <div key={index}>
+                      {errorMessages.map((message, messageIndex) => (
+                        <Error key={messageIndex}>
+                          {field}: {message}
+                        </Error>
+                      ))}
+                    </div>
+                  ))}
             </SheetContent>
           </Sheet>
           {data.map((kubeConf, index) => (
