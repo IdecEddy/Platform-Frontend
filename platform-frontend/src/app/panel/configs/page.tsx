@@ -1,12 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,createContext, useContext } from "react";
 import { validateRefreshToken, validateAuthToken } from "~/actions/auth";
-import { getUsersKubeConf } from "~/actions/kubeconf";
-import Card from "~/components/card/card";
-import CardContnet from "~/components/card/cardContent";
-import CardDescription from "~/components/card/cardDescription";
-import CardInfo from "~/components/card/cardInfo";
-import CardTitle from "~/components/card/cardTitle";
+import {
+  Card,
+  CardContnet,
+  CardDescription,
+  CardHeader,
+  CardInfo,
+  CardTitle
+} from "~/components/card/card";
 import { DesktopNav } from "~/components/navbar";
 import PanelUi from "~/components/panelUi/page";
 import Image from "next/image";
@@ -20,15 +22,19 @@ import {
 } from "~/components/ui/sheet";
 import { postKubeConf } from "~/actions/kubeconf";
 import Error from "~/components/errors/errors";
+import { TrashButton } from "~/components/buttons/trashButton";
+
+import { api } from "~/trpc/react";
+import { DataContext } from "~/app/_contexts/kubeConfData";
 const Panel: React.FC = () => {
   type DataItem = {
-    config_data: String;
-    config_label: String;
-    config_user: String;
-    config_server: String;
-    config_description: String;
-    user_id: Number;
-    id: Number;
+    config_data: string;
+    config_label: string;
+    config_user: string;
+    config_server: string;
+    config_description: string;
+    user_id: number;
+    id: number;
   };
   interface FormErrors {
     [field: string]: string[];
@@ -39,6 +45,16 @@ const Panel: React.FC = () => {
   const [data, setData] = useState<DataItem[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [open, setOpen] = useState(false);
+  const { mutate, error } = api.config.getConfigsByUserId.useMutation({
+    onSuccess(data, variables, context) {
+        setData(data);
+        console.log(data);
+    },
+    onError(error, variables, context) {
+        console.log(error);
+    },
+  });
+
   async function submitData(formData: FormData){
     setErrors({});
     let submitable = true
@@ -57,6 +73,9 @@ const Panel: React.FC = () => {
         setOpen(false)
       }
       console.log("we did it");
+      if (authToken) {
+        mutate({authToken: authToken, userId: 1})
+      }
     }
   }
 
@@ -95,20 +114,75 @@ const Panel: React.FC = () => {
     return () => clearInterval(interval);
   }, [authToken]);
 
-  useEffect(() => {
-    async function getUsersConfs() {
-      if (authToken && authToken != null) {
-        const confsReturn = await getUsersKubeConf(authToken);
-        setData(confsReturn);
-      }
+    useEffect(() => {
+    if (authToken) {
+      mutate({authToken: authToken, userId: 1})
     }
-    getUsersConfs();
-  }, [authToken]);
-
+  }, [authToken])
   if (!data) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p>No configuration data available.</p>
+       <div className="">
+        <DesktopNav activeItem={activeNavItem} />
+        <PanelUi>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger>
+              <Card>
+                <div className="h-60 flex justify-center items-center">
+                  <Image
+                    src={"/images/add_icon.png"}
+                    width={150}
+                    height={150}
+                    alt="Add a config"/>
+                </div>
+              </Card>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Add a configuration file </SheetTitle>
+                <SheetDescription>
+                  Fill out this form to create a new kubernetes configuration file used to manage new clusters.
+                </SheetDescription>
+              </SheetHeader>                
+                <form action={submitData} className="flex flex-col gap-4 mt-4">
+                  <label className='font-bold' htmlFor="label">Cluster Label</label>
+                  <input
+                    type="text"
+                    id="label"
+                    name="label"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <label className='font-bold' htmlFor="description">Cluster Description</label>
+                  <input
+                    type="text"
+                    id="description"
+                    name="description"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <label className='font-bold'htmlFor="configFile">Config File</label>
+                  <input
+                    type="file"
+                    id="kubeConfFile"
+                    name="kubeConfFile"
+                    required={true}
+                    className="border-2 border-gray-200 rounded-md p-2"
+                  />
+                  <button type="submit" className="bg-blue-500 text-white rounded-md p-2 font-bold">Submit</button>
+                </form>
+                {Object.keys(errors).length > 0 &&
+                  Object.entries(errors).map(([field, errorMessages], index) => (
+                    <div key={index}>
+                      {errorMessages.map((message, messageIndex) => (
+                        <Error key={messageIndex}>
+                          {field}: {message}
+                        </Error>
+                      ))}
+                    </div>
+                  ))}
+            </SheetContent>
+          </Sheet>
+        </PanelUi>
       </div>
     );
   }
@@ -121,7 +195,7 @@ const Panel: React.FC = () => {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger>
               <Card>
-                <div className="flex justify-center items-center">
+                <div className="h-60 flex justify-center items-center">
                   <Image
                     src={"/images/add_icon.png"}
                     width={150}
@@ -178,12 +252,15 @@ const Panel: React.FC = () => {
           </Sheet>
           {data.map((kubeConf, index) => (
             <Card key={index}>
-              <CardTitle>{kubeConf.config_label}</CardTitle>
-              <CardDescription>{kubeConf.config_description}</CardDescription>
+              <CardHeader>
+                <CardTitle>{kubeConf.config_label}</CardTitle>
+                <CardDescription>{kubeConf.config_description}</CardDescription>
+              </CardHeader>
               <CardContnet>
                 <CardInfo label="Cluster Name:" info={kubeConf.config_server} />
                 <CardInfo label="User Name:" info={kubeConf.config_user} />
               </CardContnet>
+              { authToken ? <DataContext.Provider value={{data,setData}}><TrashButton authToken={authToken} databaseId={kubeConf.id}/></DataContext.Provider> : "" }
             </Card>
           ))}
         </PanelUi>
