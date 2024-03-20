@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import yaml from 'js-yaml';
+import { z } from "zod";
+import yaml from "js-yaml";
 
 export const yamlSchema = z.string().refine(
   (data) => {
@@ -14,5 +14,3 @@ export const yamlSchema = z.string().refine(
     message: "Invalid YAML content", // Custom error message
   },
 );
-
-

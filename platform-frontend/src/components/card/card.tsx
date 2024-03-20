@@ -1,4 +1,3 @@
-
 export function Card({ children }: { children: React.ReactNode }) {
   return <div className="m-6 w-80 rounded-lg border p-5 shadow">{children}</div>;
 }
@@ -7,12 +6,8 @@ export function CardContnet({ children }: { children: React.ReactNode }) {
   return <div className="mt-5 h-14">{children}</div>;
 }
 
-export function CardHeader({children}:{children: React.ReactNode}) {
-  return (
-    <div className="h-24">
-      {children}
-    </div>
-  )
+export function CardHeader({ children }: { children: React.ReactNode }) {
+  return <div className="h-24">{children}</div>;
 }
 
 export function CardDescription({ children }: { children: React.ReactNode }) {
@@ -40,9 +35,9 @@ export function CardInfo({
   );
 }
 
-export function CardButton({children} : {children: React.ReactNode}) {
+export function CardButton({ children }: { children: React.ReactNode }) {
   return (
-    <button className="mt-5 bg-blue-500 text-white rounded-md p-2 font-bold">
+    <button className="mt-5 rounded-md bg-blue-500 p-2 font-bold text-white">
       {children}
     </button>
   );

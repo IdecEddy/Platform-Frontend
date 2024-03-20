@@ -1,5 +1,5 @@
 // contexts/DataContext.js
-import React, { createContext } from 'react';
+import React, { createContext } from "react";
 
 // Define the context's type for TypeScript, if you're using it
 interface DataItem {
@@ -18,4 +18,3 @@ interface DataContextType {
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);
-

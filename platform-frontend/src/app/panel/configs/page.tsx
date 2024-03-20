@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState,createContext, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { validateRefreshToken, validateAuthToken } from "~/actions/auth";
 import {
   Card,
@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardInfo,
-  CardTitle
+  CardTitle,
 } from "~/components/card/card";
 import { DesktopNav } from "~/components/navbar";
 import PanelUi from "~/components/panelUi/page";
@@ -47,34 +47,34 @@ const Panel: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { mutate, error } = api.config.getConfigsByUserId.useMutation({
     onSuccess(data, variables, context) {
-        setData(data);
-        console.log(data);
+      setData(data);
+      console.log(data);
     },
     onError(error, variables, context) {
-        console.log(error);
+      console.log(error);
     },
   });
 
-  async function submitData(formData: FormData){
+  async function submitData(formData: FormData) {
     setErrors({});
-    let submitable = true
+    let submitable = true;
     for (const item in formData.values) {
       if (!item.trim()) {
-        submitable = false
+        submitable = false;
       }
     }
     const ret = await postKubeConf(formData, authToken);
-    if ( ret && ret.errors) {
+    if (ret && ret.errors) {
       setErrors(ret.errors);
       console.log(ret.errors);
     }
     if (ret && ret.status == 200) {
-      if(submitable) {
-        setOpen(false)
+      if (submitable) {
+        setOpen(false);
       }
       console.log("we did it");
       if (authToken) {
-        mutate({authToken: authToken, userId: 1})
+        mutate({ authToken: authToken, userId: 1 });
       }
     }
   }
@@ -114,25 +114,26 @@ const Panel: React.FC = () => {
     return () => clearInterval(interval);
   }, [authToken]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (authToken) {
-      mutate({authToken: authToken, userId: 1})
+      mutate({ authToken: authToken, userId: 1 });
     }
-  }, [authToken])
+  }, [authToken]);
   if (!data) {
     return (
-       <div className="">
+      <div className="">
         <DesktopNav activeItem={activeNavItem} />
         <PanelUi>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger>
               <Card>
-                <div className="h-60 flex justify-center items-center">
+                <div className="flex h-60 items-center justify-center">
                   <Image
                     src={"/images/add_icon.png"}
                     width={150}
                     height={150}
-                    alt="Add a config"/>
+                    alt="Add a config"
+                  />
                 </div>
               </Card>
             </SheetTrigger>
@@ -140,46 +141,88 @@ const Panel: React.FC = () => {
               <SheetHeader>
                 <SheetTitle>Add a configuration file </SheetTitle>
                 <SheetDescription>
-                  Fill out this form to create a new kubernetes configuration file used to manage new clusters.
+                  Fill out this form to create a new kubernetes configuration file used to
+                  manage new clusters.
                 </SheetDescription>
-              </SheetHeader>                
-                <form action={submitData} className="flex flex-col gap-4 mt-4">
-                  <label className='font-bold' htmlFor="label">Cluster Label</label>
-                  <input
-                    type="text"
-                    id="label"
-                    name="label"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  <label className='font-bold' htmlFor="description">Cluster Description</label>
-                  <input
-                    type="text"
-                    id="description"
-                    name="description"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  <label className='font-bold'htmlFor="configFile">Config File</label>
-                  <input
-                    type="file"
-                    id="kubeConfFile"
-                    name="kubeConfFile"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  <button type="submit" className="bg-blue-500 text-white rounded-md p-2 font-bold">Submit</button>
-                </form>
-                {Object.keys(errors).length > 0 &&
-                  Object.entries(errors).map(([field, errorMessages], index) => (
-                    <div key={index}>
-                      {errorMessages.map((message, messageIndex) => (
-                        <Error key={messageIndex}>
-                          {field}: {message}
-                        </Error>
-                      ))}
-                    </div>
-                  ))}
+              </SheetHeader>
+              <form action={submitData} className="mt-4 flex flex-col gap-4">
+                <label className="font-bold" htmlFor="label">
+                  Cluster Label
+                </label>
+                <input
+                  type="text"
+                  id="label"
+                  name="label"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="description">
+                  Cluster Description
+                </label>
+                <input
+                  type="text"
+                  id="description"
+                  name="description"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  Config File
+                </label>
+                <input
+                  type="file"
+                  id="kubeConfFile"
+                  name="kubeConfFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  CA File
+                </label>
+                <input
+                  type="file"
+                  id="caFile"
+                  name="caFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  Key File
+                </label>
+                <input
+                  type="file"
+                  id="keyFile"
+                  name="keyFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  Cert File
+                </label>
+                <input
+                  type="file"
+                  id="certFile"
+                  name="certFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <button
+                  type="submit"
+                  className="rounded-md bg-blue-500 p-2 font-bold text-white"
+                >
+                  Submit
+                </button>
+              </form>
+              {Object.keys(errors).length > 0 &&
+                Object.entries(errors).map(([field, errorMessages], index) => (
+                  <div key={index}>
+                    {errorMessages.map((message, messageIndex) => (
+                      <Error key={messageIndex}>
+                        {field}: {message}
+                      </Error>
+                    ))}
+                  </div>
+                ))}
             </SheetContent>
           </Sheet>
         </PanelUi>
@@ -195,12 +238,13 @@ const Panel: React.FC = () => {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger>
               <Card>
-                <div className="h-60 flex justify-center items-center">
+                <div className="flex h-60 items-center justify-center">
                   <Image
                     src={"/images/add_icon.png"}
                     width={150}
                     height={150}
-                    alt="Add a config"/>
+                    alt="Add a config"
+                  />
                 </div>
               </Card>
             </SheetTrigger>
@@ -208,46 +252,88 @@ const Panel: React.FC = () => {
               <SheetHeader>
                 <SheetTitle>Add a configuration file </SheetTitle>
                 <SheetDescription>
-                  Fill out this form to create a new kubernetes configuration file used to manage new clusters.
+                  Fill out this form to create a new kubernetes configuration file used to
+                  manage new clusters.
                 </SheetDescription>
-              </SheetHeader>                
-                <form action={submitData} className="flex flex-col gap-4 mt-4">
-                  <label className='font-bold' htmlFor="label">Cluster Label</label>
-                  <input
-                    type="text"
-                    id="label"
-                    name="label"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  <label className='font-bold' htmlFor="description">Cluster Description</label>
-                  <input
-                    type="text"
-                    id="description"
-                    name="description"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  <label className='font-bold'htmlFor="configFile">Config File</label>
-                  <input
-                    type="file"
-                    id="kubeConfFile"
-                    name="kubeConfFile"
-                    required={true}
-                    className="border-2 border-gray-200 rounded-md p-2"
-                  />
-                  <button type="submit" className="bg-blue-500 text-white rounded-md p-2 font-bold">Submit</button>
-                </form>
-                {Object.keys(errors).length > 0 &&
-                  Object.entries(errors).map(([field, errorMessages], index) => (
-                    <div key={index}>
-                      {errorMessages.map((message, messageIndex) => (
-                        <Error key={messageIndex}>
-                          {field}: {message}
-                        </Error>
-                      ))}
-                    </div>
-                  ))}
+              </SheetHeader>
+              <form action={submitData} className="mt-4 flex flex-col gap-4">
+                <label className="font-bold" htmlFor="label">
+                  Cluster Label
+                </label>
+                <input
+                  type="text"
+                  id="label"
+                  name="label"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="description">
+                  Cluster Description
+                </label>
+                <input
+                  type="text"
+                  id="description"
+                  name="description"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  Config File
+                </label>
+                <input
+                  type="file"
+                  id="kubeConfFile"
+                  name="kubeConfFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  CA File
+                </label>
+                <input
+                  type="file"
+                  id="caFile"
+                  name="caFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  Key File
+                </label>
+                <input
+                  type="file"
+                  id="keyFile"
+                  name="keyFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <label className="font-bold" htmlFor="configFile">
+                  Cert File
+                </label>
+                <input
+                  type="file"
+                  id="certFile"
+                  name="certFile"
+                  required={true}
+                  className="rounded-md border-2 border-gray-200 p-2"
+                />
+                <button
+                  type="submit"
+                  className="rounded-md bg-blue-500 p-2 font-bold text-white"
+                >
+                  Submit
+                </button>
+              </form>
+              {Object.keys(errors).length > 0 &&
+                Object.entries(errors).map(([field, errorMessages], index) => (
+                  <div key={index}>
+                    {errorMessages.map((message, messageIndex) => (
+                      <Error key={messageIndex}>
+                        {field}: {message}
+                      </Error>
+                    ))}
+                  </div>
+                ))}
             </SheetContent>
           </Sheet>
           {data.map((kubeConf, index) => (
@@ -260,7 +346,13 @@ const Panel: React.FC = () => {
                 <CardInfo label="Cluster Name:" info={kubeConf.config_server} />
                 <CardInfo label="User Name:" info={kubeConf.config_user} />
               </CardContnet>
-              { authToken ? <DataContext.Provider value={{data,setData}}><TrashButton authToken={authToken} databaseId={kubeConf.id}/></DataContext.Provider> : "" }
+              {authToken ? (
+                <DataContext.Provider value={{ data, setData }}>
+                  <TrashButton authToken={authToken} databaseId={kubeConf.id} />
+                </DataContext.Provider>
+              ) : (
+                ""
+              )}
             </Card>
           ))}
         </PanelUi>
