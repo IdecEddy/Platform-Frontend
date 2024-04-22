@@ -1,6 +1,5 @@
 "use server";
 import axios from "axios";
-import { read } from "fs";
 import https from "https";
 import { readFileContent } from "~/utils/files";
 import { KubeConfigRequestSchema } from "~/validations/kubeConfCreateRequest";

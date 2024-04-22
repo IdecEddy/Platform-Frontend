@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { validateAuthToken, validateRefreshToken } from "~/actions/auth";
 import { DesktopNav } from "~/components/navbar";
-
 const Panel: React.FC = () => {
   const activeNavItem = "Home";
   const [loggedIn, setLoggedIn] = useState(false);
@@ -44,7 +43,11 @@ const Panel: React.FC = () => {
   }, [authToken]);
 
   if (loggedIn == true) {
-    return <DesktopNav activeItem={activeNavItem} />;
+    return (
+      <>
+        <DesktopNav activeItem={activeNavItem} />
+      </>
+    );
   }
 };
 export default Panel;
